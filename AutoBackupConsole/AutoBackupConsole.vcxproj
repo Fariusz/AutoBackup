@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{3673694c-96a7-49c2-832a-b8924d8a4516}</ProjectGuid>
-    <RootNamespace>AutoBackup</RootNamespace>
+    <ProjectGuid>{3dcc17d3-8829-42a6-afef-de13b29c98b3}</ProjectGuid>
+    <RootNamespace>AutoBackupConsole</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -114,8 +114,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,8 +129,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,18 +141,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\AutoBackupConsole\BackupProperties.cpp" />
-    <ClCompile Include="AutoBackup.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="TaskExecutor.cpp" />
-    <ClCompile Include="TaskLoader.cpp" />
+    <ClCompile Include="AutoBackupConsole.cpp" />
+    <ClCompile Include="BackupProperties.cpp" />
+    <ClCompile Include="Dialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\AutoBackupConsole\BackupProperties.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="TaskExecutor.h" />
-    <ClInclude Include="TaskLoader.h" />
-    <ClInclude Include="Time.h" />
+    <ClInclude Include="BackupProperties.h" />
+    <ClInclude Include="Dialog.h" />
+    <ClInclude Include="Files.h" />
+    <ClInclude Include="NotImplementedException.h" />
+    <ClInclude Include="Validation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

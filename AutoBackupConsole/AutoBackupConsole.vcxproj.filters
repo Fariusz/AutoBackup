@@ -15,36 +15,30 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AutoBackup.cpp">
+    <ClCompile Include="AutoBackupConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TaskLoader.cpp">
+    <ClCompile Include="Dialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TaskExecutor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\AutoBackupConsole\BackupProperties.cpp">
+    <ClCompile Include="BackupProperties.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TaskLoader.h">
+    <ClInclude Include="Dialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Time.h">
+    <ClInclude Include="Files.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TaskExecutor.h">
+    <ClInclude Include="Validation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
+    <ClInclude Include="NotImplementedException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\AutoBackupConsole\BackupProperties.h">
+    <ClInclude Include="BackupProperties.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

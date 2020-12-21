@@ -1,0 +1,264 @@
+#include "Dialog.h"
+#include <iostream>
+#include <conio.h>
+#include <fstream>
+#include <algorithm>
+#include <sstream>
+#include "Files.h"
+#include "Validation.h"
+#include "NotImplementedException.h"
+
+using namespace std;
+
+Command Dialog::showMainDialog()
+{
+	refreshConsole();
+	printMainMenu();
+	int option = readOption();
+	Command command = (Command)(option - 1);
+	switch (command)
+	{
+		case Command::Status:		showStatus();				break;
+		case Command::Start:		startAutoBackupProcess();	break;
+		case Command::Stop:			stopAutoBackupProcess();	break;
+		case Command::ShowSchedule: showSchedule();				break;
+		case Command::NewTask:		createNewBackupTask();		break;
+		case Command::Shutdown:									break;
+	}
+	return command;
+}
+
+void Dialog::showStatus()
+{
+	throw NotImplementedException();
+}
+
+void Dialog::startAutoBackupProcess()
+{
+	throw NotImplementedException();
+}
+
+void Dialog::stopAutoBackupProcess()
+{
+	throw NotImplementedException();
+}
+
+void Dialog::showSchedule()
+{
+	refreshConsole();
+	vector<BackupProperties> tasks = loadTasksFromFile(SCHEDULE_FILE_NAME);
+	printTasks(tasks);
+	printf("\nNaciœnij dowolny przycisk, aby wróciæ do menu g³ównego...");
+	getchar();
+}
+
+void Dialog::printTasks(std::vector<BackupProperties>& tasks)
+{
+	printf("Data\t\tGodzina\t\tOkres\t\tObiekt Ÿród³owy\t\tFolder docelowy\t\tKompresja\n");
+	for (BackupProperties t : tasks)
+	{
+		printf(
+			"%s\t%s%\t%s %s\t%-20s\t%-20s\t%5d\n",
+			t.firstTime.date.c_str(),
+			t.firstTime.time.c_str(),
+			t.interval.days.c_str(),
+			t.interval.hoursMins.c_str(),
+			t.srcDir.c_str(),
+			t.destDir.c_str(),
+			t.compress
+		);
+	}
+}
+
+void Dialog::pause()
+{
+	getchar();
+	getchar();
+}
+
+vector<BackupProperties> Dialog::loadTasksFromFile(std::string fileName)
+{
+	vector<BackupProperties> tasks;
+	ifstream ifs(fileName);
+	std::string line;
+
+	while (std::getline(ifs, line)) {
+		BackupProperties task;
+		istringstream iss(line);
+		string intervalMonthsDay, intervalHoursMins;
+		iss >> task.firstTime.date;
+		iss >> task.firstTime.time;
+		iss >> task.interval.days;
+		iss >> task.interval.hoursMins;
+		iss >> task.srcDir;
+		iss >> task.destDir;
+		iss >> task.compress;
+		tasks.push_back(task);
+	}
+	return tasks;
+}
+
+BackupProperties Dialog::showNewTaskDialog()
+{
+	BackupProperties backup;
+	backup.srcDir = showDirDialog("Podaj œcie¿kê do katalogu albo pliku Ÿród³owego");
+	backup.destDir = showDirDialog("Podaj œcie¿kê do katalogu docelowego");
+	backup.compress = showCompressDialog();
+	backup.firstTime.date = showDateDialog();
+	backup.firstTime.time = showTimeDialog();
+	backup.interval = showIntervalDialog();
+	return backup;
+}
+
+void Dialog::createNewBackupTask()
+{
+	try
+	{
+		BackupProperties backup = showNewTaskDialog();
+		saveTask(backup);
+		refreshConsole();
+		printf("Pomyœlnie dodano zadanie. Naciœnij dowolny przycisk...");
+		pause();
+	}
+	catch (canceledException) {}
+	catch (exception e)
+	{
+		refreshConsole();
+		printf("Wyst¹pi³ b³¹d. Naciœnij dowolny przycisk...");
+	}
+}
+
+void Dialog::saveTask(const BackupProperties& backup)
+{
+	ofstream ofs("schedule.dat", ios::app);
+	ofs << backupprops::to_string(backup) << "\n";
+	ofs.close();
+}
+
+string Dialog::showDirDialog(string text)
+{
+	bool pathExists = false;
+	string dir;
+	do
+	{
+		refreshConsole();
+		printf("%s: ", text.c_str());
+		cin >> dir;
+		cin.clear();
+		pathExists = files::exists(dir);
+		if (!pathExists)
+			showCancelDialog("Œcie¿ka " + dir + " nie istnieje. Czy chcesz wprowadziæ œcie¿kê ponownie?");
+	} while (!pathExists);
+	return dir;
+}
+
+string Dialog::showDateDialog()
+{
+	bool isFormatCorrect = false;
+	string date;
+	do
+	{
+		refreshConsole();
+		printf("Podaj datê pierwszego backupu (dd-mm-yyyy): ");
+		cin >> date;
+		cin.clear();
+		isFormatCorrect = validation::validateDate(date);
+		if (!isFormatCorrect)
+			showCancelDialog("Niepoprawna data. Czy chcesz wprowadziæ datê ponownie?");
+	} while (!isFormatCorrect);
+	return date;
+}
+
+string Dialog::showTimeDialog()
+{
+	bool isFormatCorrect = false;
+	string time;
+	do
+	{
+		refreshConsole();
+		printf("Podaj godzinê pierwszego backupu (hh:mm:ss): ");
+		cin >> time;
+		cin.clear();
+		isFormatCorrect = validation::validateTime(time);
+		if (!isFormatCorrect)
+			showCancelDialog("Niepoprawny czas. Czy chcesz wprowadziæ czas ponownie?");
+	} while (!isFormatCorrect);
+
+	return time;
+}
+
+BackupInterval Dialog::showIntervalDialog()
+{
+	bool isFormatCorrect = false; 
+	BackupInterval interval;
+	do
+	{
+		refreshConsole();
+		printf("Podaj okres pomiêdzy kopiami (dd hh:mm): ");
+		cin >> interval.days >> interval.hoursMins;
+		cin.clear();
+		string sInterval = interval.days + " " + interval.hoursMins;
+		isFormatCorrect = validation::validateInterval(sInterval);
+		if (!isFormatCorrect)
+			showCancelDialog("Niepoprawny okres. Czy chcesz okres ponownie?");
+	} while (!isFormatCorrect);	
+	return interval;
+}
+
+bool Dialog::showCompressDialog()
+{
+	refreshConsole();
+	printf("Czy skompresowaæ kopiê (1/0): ");
+	bool compress = scanAsBool();
+	return compress;
+}
+
+void Dialog::showCancelDialog(string text)
+{
+	refreshConsole();
+	printf("%s (1/0): ", text.c_str());
+	bool result = scanAsBool();
+	if (!result)
+		throw canceledException();
+}
+
+void Dialog::refreshConsole()
+{
+	system("cls");
+	printf("\t\t\t --------------------------------------------------------------------\n");
+	printf("\t\t\t| Auto Backup - program do automatycznego tworzenia kopi zapasowych  |\n");
+	printf("\t\t\t --------------------------------------------------------------------\n\n\n\n");
+}
+
+void Dialog::printMainMenu()
+{
+	printf("Wybierz opcjê:\n");
+	printf("1 - Status programu \n2 - Uruchom program \n3 - Przerwij program \n4 - Utwórz zadanie \n5 - Wyœwietl harmonogram \n6 - Wy³¹cz konsolê\n\n");
+}
+
+int Dialog::readOption()
+{
+	bool correctOption, optionInScope;
+	int option;
+	do
+	{
+		int iChar = _getch();
+		char cOption = (char)iChar;
+		correctOption = isalnum(cOption) && !isalpha(cOption);
+		option = cOption - '0';
+		optionInScope = option > -1 && option < 7;
+	} while (!correctOption || !optionInScope);
+	return option;
+}
+
+bool Dialog::scanAsBool()
+{
+	int iChar = _getch();
+	bool result;
+	if (isdigit(iChar))
+		result = iChar - '0';
+	else
+		result = true;
+	cin.clear();
+	return result;
+}
