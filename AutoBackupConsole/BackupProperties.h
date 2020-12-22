@@ -10,7 +10,7 @@ struct BackupInterval {
 struct BackupProperties {
 	std::string srcDir;
 	std::string destDir;
-	bool compress;
+	bool compress = false;
 	struct {
 		std::string date;
 		std::string time;

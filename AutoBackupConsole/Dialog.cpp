@@ -39,31 +39,34 @@ void Dialog::showStatus()
 		showMessage("Program AutoBackup jest wy³¹czony.");
 }
 
-void Dialog::showMessage(std::string text)
-{
-	refreshConsole();
-	printf("%s Naciœnij dowolny przycisk...", text.c_str());
-	pause();
-}
-
 void Dialog::startAutoBackupProcess()
 {
 	AutoBackupProcess process = AutoBackupProcess::retrieveProcess();
 	bool result = false;
-	if (!process.isRunning() && process.start())
+	if (process.isRunning())
+		showMessage("Program AutoBackup jest ju¿ uruchomiony.");
+	else if (process.start())
 		showMessage("Pomyœlnie uruchomiono program AutoBackup.");
 	else
-		showMessage("Program AutoBackup jest ju¿ uruchomiony.");
+		showMessage("Nie uda³o siê uruchomiæ programu AutoBackup.");
 }
 
 void Dialog::stopAutoBackupProcess()
 {
 	AutoBackupProcess process = AutoBackupProcess::retrieveProcess();
-	if (process.isRunning() && process.stop())
-		showMessage("Pomyœlnie zatrzymano program AutoBackup");
+	if (!process.isRunning())
+		showMessage("Program AutoBackup jest ju¿ wy³¹czony.");
+	else if (process.stop())
+		showMessage("Pomyœlnie zatrzymano program AutoBackup.");
 	else
-		showMessage("Program AutoBackup jest ju¿ wy³¹czony");
-		
+		showMessage("Nie uda³o siê wy³¹czyæ programu AutoBackup.");		
+}
+
+void Dialog::showMessage(std::string text)
+{
+	refreshConsole();
+	printf("%s Naciœnij dowolny przycisk...", text.c_str());
+	pause();
 }
 
 void Dialog::showSchedule()

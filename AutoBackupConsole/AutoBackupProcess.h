@@ -2,7 +2,7 @@
 
 class AutoBackupProcess
 {
-	constexpr static const char* _processName = "AutoBackup.exe";
+	constexpr static const char* _programName = "AutoBackup.exe";
 	void* _hProcess;
 	AutoBackupProcess();
 
@@ -12,4 +12,6 @@ public:
 	bool start();
 	bool stop();
 	bool isRunning();
+private:
+	bool isElevated();
 };

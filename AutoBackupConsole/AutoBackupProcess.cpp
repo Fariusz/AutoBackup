@@ -29,7 +29,7 @@ AutoBackupProcess AutoBackupProcess::retrieveProcess()
     {
         while (Process32Next(snapshot, &entry) == TRUE)
         {
-            if (stricmp(entry.szExeFile, _processName) == 0)
+            if (stricmp(entry.szExeFile, _programName) == 0)
             {
                 processInstance._hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
                 break;
@@ -42,16 +42,27 @@ AutoBackupProcess AutoBackupProcess::retrieveProcess()
 bool AutoBackupProcess::start()
 {
     BOOL result;
+    SHELLEXECUTEINFO shExInfo = { 0 };
+    shExInfo.cbSize = sizeof(shExInfo);
+    shExInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shExInfo.hwnd = 0;
+    shExInfo.lpVerb = "runas";
+    shExInfo.lpFile = _programName;   
+    shExInfo.lpParameters = "";
+    shExInfo.lpDirectory = 0;
+    shExInfo.nShow = SW_HIDE;
+    shExInfo.hInstApp = 0;
 
-
-
-    return false;
+    result = ShellExecuteEx(&shExInfo);
+    _hProcess = shExInfo.hProcess;
+    return result;
 }
 
 bool AutoBackupProcess::stop()
 {
-    BOOL result;
-    return false;
+    TerminateProcess(_hProcess, -1);
+    bool result = CloseHandle(_hProcess);
+    return result;
 }
 
 bool AutoBackupProcess::isRunning()
@@ -66,4 +77,20 @@ bool AutoBackupProcess::isRunning()
     else
         bRunning = false;
     return bRunning;
+}
+
+bool AutoBackupProcess::isElevated() {
+    BOOL fRet = FALSE;
+    HANDLE hToken = NULL;
+    if (OpenProcessToken(_hProcess, TOKEN_QUERY, &hToken)) {
+        TOKEN_ELEVATION Elevation;
+        DWORD cbSize = sizeof(TOKEN_ELEVATION);
+        if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+            fRet = Elevation.TokenIsElevated;
+        }
+    }
+    if (hToken) {
+        CloseHandle(hToken);
+    }
+    return fRet;
 }
