@@ -28,6 +28,7 @@ private:
 	void createNewBackupTask();
 	void saveTask(const BackupProperties& backup);
 	void showStatus();
+	void showMessage(std::string text);
 	void startAutoBackupProcess();
 	void stopAutoBackupProcess();
 	void showSchedule();

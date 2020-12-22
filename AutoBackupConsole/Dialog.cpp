@@ -7,6 +7,7 @@
 #include "Files.h"
 #include "Validation.h"
 #include "NotImplementedException.h"
+#include "AutoBackupProcess.h"
 
 using namespace std;
 
@@ -18,29 +19,51 @@ Command Dialog::showMainDialog()
 	Command command = (Command)(option - 1);
 	switch (command)
 	{
-		case Command::Status:		showStatus();				break;
-		case Command::Start:		startAutoBackupProcess();	break;
-		case Command::Stop:			stopAutoBackupProcess();	break;
-		case Command::ShowSchedule: showSchedule();				break;
-		case Command::NewTask:		createNewBackupTask();		break;
-		case Command::Shutdown:									break;
+	case Command::Status:		showStatus();				break;
+	case Command::Start:		startAutoBackupProcess();	break;
+	case Command::Stop:			stopAutoBackupProcess();	break;
+	case Command::ShowSchedule: showSchedule();				break;
+	case Command::NewTask:		createNewBackupTask();		break;
+	case Command::Shutdown:									break;
 	}
 	return command;
 }
 
 void Dialog::showStatus()
 {
-	throw NotImplementedException();
+	AutoBackupProcess process = AutoBackupProcess::retrieveProcess();
+	bool status = process.isRunning();
+	if (status)
+		showMessage("Program AutoBackup jest uruchomiony.");
+	else
+		showMessage("Program AutoBackup jest wy³¹czony.");
+}
+
+void Dialog::showMessage(std::string text)
+{
+	refreshConsole();
+	printf("%s Naciœnij dowolny przycisk...", text.c_str());
+	pause();
 }
 
 void Dialog::startAutoBackupProcess()
 {
-	throw NotImplementedException();
+	AutoBackupProcess process = AutoBackupProcess::retrieveProcess();
+	bool result = false;
+	if (!process.isRunning() && process.start())
+		showMessage("Pomyœlnie uruchomiono program AutoBackup.");
+	else
+		showMessage("Program AutoBackup jest ju¿ uruchomiony.");
 }
 
 void Dialog::stopAutoBackupProcess()
 {
-	throw NotImplementedException();
+	AutoBackupProcess process = AutoBackupProcess::retrieveProcess();
+	if (process.isRunning() && process.stop())
+		showMessage("Pomyœlnie zatrzymano program AutoBackup");
+	else
+		showMessage("Program AutoBackup jest ju¿ wy³¹czony");
+		
 }
 
 void Dialog::showSchedule()
@@ -116,9 +139,7 @@ void Dialog::createNewBackupTask()
 	{
 		BackupProperties backup = showNewTaskDialog();
 		saveTask(backup);
-		refreshConsole();
-		printf("Pomyœlnie dodano zadanie. Naciœnij dowolny przycisk...");
-		pause();
+		showMessage("Pomyœlnie dodano zadanie.");
 	}
 	catch (canceledException) {}
 	catch (exception e)
@@ -169,7 +190,7 @@ string Dialog::showDateDialog()
 	return date;
 }
 
-string Dialog::showTimeDialog()
+std::string Dialog::showTimeDialog()
 {
 	bool isFormatCorrect = false;
 	string time;
@@ -189,7 +210,7 @@ string Dialog::showTimeDialog()
 
 BackupInterval Dialog::showIntervalDialog()
 {
-	bool isFormatCorrect = false; 
+	bool isFormatCorrect = false;
 	BackupInterval interval;
 	do
 	{
@@ -201,7 +222,7 @@ BackupInterval Dialog::showIntervalDialog()
 		isFormatCorrect = validation::validateInterval(sInterval);
 		if (!isFormatCorrect)
 			showCancelDialog("Niepoprawny okres. Czy chcesz okres ponownie?");
-	} while (!isFormatCorrect);	
+	} while (!isFormatCorrect);
 	return interval;
 }
 

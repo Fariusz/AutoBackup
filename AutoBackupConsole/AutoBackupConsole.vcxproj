@@ -142,10 +142,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AutoBackupConsole.cpp" />
+    <ClCompile Include="AutoBackupProcess.cpp" />
     <ClCompile Include="BackupProperties.cpp" />
     <ClCompile Include="Dialog.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AutoBackupProcess.h" />
     <ClInclude Include="BackupProperties.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="Files.h" />
