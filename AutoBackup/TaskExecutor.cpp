@@ -10,7 +10,10 @@ void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 
 	for(BackupProperties t : tasks)
 	{
-		temp << t.srcDir << " -> " << t.destDir << " kompresja:" << t.compress << endl << timeutils::now();
+		temp << t.srcDir << " -> "
+			<< t.destDir << " kompresja:"
+			<< t.compress << timeutils::now()
+			<< endl;
 	}
 	temp.close();
 }
