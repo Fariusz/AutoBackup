@@ -146,13 +146,14 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="TaskExecutor.cpp" />
     <ClCompile Include="TaskLoader.cpp" />
+    <ClCompile Include="TimeUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AutoBackupConsole\BackupProperties.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="TaskExecutor.h" />
     <ClInclude Include="TaskLoader.h" />
-    <ClInclude Include="Time.h" />
+    <ClInclude Include="TimeUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -10,7 +10,7 @@
 #include <iostream>
 #include "../AutoBackupConsole/Files.h"
 #include "../AutoBackupConsole/BackupProperties.h"
-#include "Time.h"
+#include "TimeUtils.h"
 
 using namespace std;
 
