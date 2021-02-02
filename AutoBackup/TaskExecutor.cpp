@@ -20,11 +20,10 @@
 #include <strsafe.h>
 using namespace std;
 
-#define MAX_THREADS 2
+#define MAX_THREADS 3
 #define BUF_SIZE 255
 
 DWORD WINAPI MyThreadFunction(LPVOID lpParam);
-
 
 typedef struct threadData
 {
@@ -32,7 +31,6 @@ typedef struct threadData
 	string destDir;
 	bool compress = false;
 }MYDATA, * PMYDATA;
-
 
 void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 {
@@ -99,10 +97,13 @@ DWORD WINAPI MyThreadFunction(LPVOID lpParam)
 
 	pDataArray = (PMYDATA)lpParam;
 
-	StringCchPrintf(msgBuf, BUF_SIZE, TEXT("Sciezka zrodlowa / docelowa = %d, %d\n"),
-		pDataArray->srcDir, pDataArray->destDir);
+
+	//Nie wiadomo czemu to sie odpala co 5 sekund
+	StringCchPrintf(msgBuf, BUF_SIZE, TEXT("Tworze backup, kompresja: %d\n"), pDataArray->compress);
 	StringCchLength(msgBuf, BUF_SIZE, &cchStringSize);
 	WriteConsole(hStdout, msgBuf, (DWORD)cchStringSize, &dwChars, NULL);
+
+	TaskExecutor::DoBackup(pDataArray->srcDir, pDataArray->destDir, pDataArray->compress);
 
 	return 0;
 }
