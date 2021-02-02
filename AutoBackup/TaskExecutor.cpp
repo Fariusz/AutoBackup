@@ -140,6 +140,8 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 			HANDLE inputHandle, outputHandle;
 			DWORD inputBytes, outputBytes;
 			CHAR buffer[bufferSize];
+			if (destination.back() != '\\')
+				destination += "\\";
 			destination.append(findFileData.cFileName);
 			FindClose(findHandle);
 			inputHandle = CreateFile(source.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
