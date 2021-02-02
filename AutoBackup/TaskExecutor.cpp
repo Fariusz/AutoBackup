@@ -110,12 +110,12 @@ DWORD WINAPI MyThreadFunction(LPVOID lpParam)
 
 void TaskExecutor::DoBackup(string source, string destination, bool compress)
 {
+	if (source.back() == '\\')
+		source.pop_back();
 	WIN32_FIND_DATAA findFileData;
 	HANDLE findHandle = FindFirstFile(source.c_str(), &findFileData);
 	if (findHandle != INVALID_HANDLE_VALUE)
 	{
-		if (source.back() == '\\')
-			source.pop_back();
 		bool success = false;
 		if (findFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
 		{
