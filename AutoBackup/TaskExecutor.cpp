@@ -1,18 +1,110 @@
+#pragma warning(disable:4244)
+#pragma warning(disable:4996 4005)
+#define _CRT_SECURE_NO_WARNINGS
+#define _USE_MATH_DEFINES
+#ifdef UNICODE
+# undef UNICODE
+# define _MBCS
+#endif
+#if defined(_MSVC_LANG) && (_MSVC_LANG>=201703L)
+# define _HAS_STD_BYTE 0
+# define _HAS_STD_BOOLEAN 0
+#endif
+
 #include "TaskExecutor.h"
 #include "TimeUtils.h"
 #include <windows.h>
+#include <cstdlib>
 #include <iostream>
+#include <tchar.h>
+#include <strsafe.h>
 using namespace std;
+
+#define MAX_THREADS 2
+#define BUF_SIZE 255
+
+DWORD WINAPI MyThreadFunction(LPVOID lpParam);
+
+
+typedef struct threadData
+{
+	string srcDir;
+	string destDir;
+	bool compress = false;
+}MYDATA, * PMYDATA;
+
 
 void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 {
-	// TODO implement 
+	PMYDATA pDataArray[MAX_THREADS];
+	DWORD   dwThreadIdArray[MAX_THREADS];
+	HANDLE  hThreadArray[MAX_THREADS];
 
-	for(BackupProperties t : tasks)
+	for (int i = 0; i < MAX_THREADS; i++)
 	{
-		DoBackup(t.srcDir, t.destDir, t.compress);
+		pDataArray[i] = (PMYDATA)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(MYDATA));
+
+		if (pDataArray[i] == NULL)
+		{
+			ExitProcess(2);
+		}
+
+		for (BackupProperties t : tasks)
+		{
+			pDataArray[i]->srcDir = t.srcDir;
+			pDataArray[i]->destDir = t.destDir;
+			pDataArray[i]->compress = t.compress;
+		}
+
+		hThreadArray[i] = CreateThread(
+			NULL,                  
+			0,                      
+			MyThreadFunction,      
+			pDataArray[i],        
+			0,                      
+			&dwThreadIdArray[i]);  
+
+		if (hThreadArray[i] == NULL)
+		{
+			ErrorHandler((LPTSTR)TEXT("error"));
+			ExitProcess(3);
+		}
 	}
 
+	WaitForMultipleObjects(MAX_THREADS, hThreadArray, TRUE, INFINITE);
+
+	for (int i = 0; i < MAX_THREADS; i++)
+	{
+		CloseHandle(hThreadArray[i]);
+		if (pDataArray[i] != NULL)
+		{
+			HeapFree(GetProcessHeap(), 0, pDataArray[i]);
+			pDataArray[i] = NULL;  
+		}
+	}
+}
+
+DWORD WINAPI MyThreadFunction(LPVOID lpParam)
+{
+	HANDLE hStdout;
+	PMYDATA pDataArray;
+
+	TCHAR msgBuf[BUF_SIZE];
+	size_t cchStringSize;
+	DWORD dwChars;
+
+	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hStdout == INVALID_HANDLE_VALUE)
+		return 1;
+
+	pDataArray = (PMYDATA)lpParam;
+
+	StringCchPrintf(msgBuf, BUF_SIZE, TEXT("Sciezka zrodlowa / docelowa = %d, %d\n"),
+		pDataArray->srcDir, pDataArray->destDir);
+	StringCchLength(msgBuf, BUF_SIZE, &cchStringSize);
+	WriteConsole(hStdout, msgBuf, (DWORD)cchStringSize, &dwChars, NULL);
+
+	return 0;
 }
 
 void TaskExecutor::DoBackup(string source, string destination, bool compress)
@@ -63,3 +155,38 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 
 	}
 }
+void TaskExecutor::ErrorHandler(LPTSTR lpszFunction)
+{
+	// Retrieve the system error message for the last-error code.
+
+	LPVOID lpMsgBuf;
+	LPVOID lpDisplayBuf;
+	DWORD dw = GetLastError();
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		dw,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf,
+		0, NULL);
+
+	// Display the error message.
+
+	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+		(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+	StringCchPrintf((LPTSTR)lpDisplayBuf,
+		LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+		TEXT("%s failed with error %d: %s"),
+		lpszFunction, dw, lpMsgBuf);
+	MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+	// Free error-handling buffer allocations.
+
+	LocalFree(lpMsgBuf);
+	LocalFree(lpDisplayBuf);
+}
+
+
