@@ -34,52 +34,61 @@ typedef struct threadData
 
 void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 {
-	PMYDATA pDataArray[MAX_THREADS];
-	DWORD   dwThreadIdArray[MAX_THREADS];
-	HANDLE  hThreadArray[MAX_THREADS];
+	PMYDATA* pDataArray = new PMYDATA[tasks.size()];
+	DWORD* dwThreadIdArray = new DWORD[tasks.size()];
+	HANDLE* hThreadArray = new HANDLE[tasks.size()];
 
-	for (int i = 0; i < MAX_THREADS; i++)
+	for (int i = 0; i < tasks.size(); i++)
 	{
+		tasks[i].destDir += '\0';
+		tasks[i].srcDir += '\0';
 		pDataArray[i] = (PMYDATA)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(MYDATA));
-
 		if (pDataArray[i] == NULL)
 		{
 			ExitProcess(2);
 		}
-
-		for (BackupProperties t : tasks)
+		pDataArray[i]->srcDir = new char[tasks[i].srcDir.size()];
+		for (int ch = 0; ch < tasks[i].srcDir.size(); ch++)
 		{
-			pDataArray[i]->srcDir = t.srcDir;
-			pDataArray[i]->destDir = t.destDir;
-			pDataArray[i]->compress = t.compress;
+			pDataArray[i]->srcDir[ch] = tasks[i].srcDir[ch];
 		}
-
+		pDataArray[i]->destDir = new char[tasks[i].destDir.size()];
+		for (int ch = 0; ch < tasks[i].destDir.size(); ch++)
+		{
+			pDataArray[i]->destDir[ch] = tasks[i].destDir[ch];
+		}
+		pDataArray[i]->compress = tasks[i].compress;
+		dwThreadIdArray[i] = ' ';
 		hThreadArray[i] = CreateThread(
-			NULL,                  
-			0,                      
-			MyThreadFunction,      
-			pDataArray[i],        
-			0,                      
-			&dwThreadIdArray[i]);  
-
+			NULL,
+			0,
+			MyThreadFunction,
+			pDataArray[i],
+			0,
+			&dwThreadIdArray[i]);
 		if (hThreadArray[i] == NULL)
 		{
 			ErrorHandler((LPTSTR)TEXT("error"));
 			ExitProcess(3);
 		}
 	}
-
-	WaitForMultipleObjects(MAX_THREADS, hThreadArray, TRUE, INFINITE);
-
-	for (int i = 0; i < MAX_THREADS; i++)
+	DWORD count = tasks.size();
+	WaitForMultipleObjects(count, hThreadArray, TRUE, INFINITE);
+	for (int i = 0; i < tasks.size(); i++)
 	{
 		CloseHandle(hThreadArray[i]);
 		if (pDataArray[i] != NULL)
 		{
 			HeapFree(GetProcessHeap(), 0, pDataArray[i]);
-			pDataArray[i] = NULL;  
+			pDataArray[i] = NULL;
 		}
 	}
+	delete[] pDataArray;
+	delete[] dwThreadIdArray;
+	delete[] hThreadArray;
+	pDataArray = nullptr;
+	dwThreadIdArray = nullptr;
+	hThreadArray = nullptr;
 }
 
 DWORD WINAPI MyThreadFunction(LPVOID lpParam)
@@ -97,7 +106,6 @@ DWORD WINAPI MyThreadFunction(LPVOID lpParam)
 
 	pDataArray = (PMYDATA)lpParam;
 
-
 	//Nie wiadomo czemu to sie odpala co 5 sekund
 	StringCchPrintf(msgBuf, BUF_SIZE, TEXT("Tworze backup, kompresja: %d\n"), pDataArray->compress);
 	StringCchLength(msgBuf, BUF_SIZE, &cchStringSize);
@@ -110,11 +118,17 @@ DWORD WINAPI MyThreadFunction(LPVOID lpParam)
 
 void TaskExecutor::DoBackup(string source, string destination, bool compress)
 {
+	if (source.back() == '\\')
+		source.pop_back();
 	WIN32_FIND_DATAA findFileData;
 	HANDLE findHandle = FindFirstFile(source.c_str(), &findFileData);
+	cout << "Source: " << source << endl;
+	cout << "Error: " << GetLastError() << endl;
 	if (findHandle != INVALID_HANDLE_VALUE)
 	{
+		cout << "Attr: " << findFileData.dwFileAttributes << endl;
 		bool success = false;
+
 		if (findFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
 		{
 			FindClose(findHandle);
@@ -122,10 +136,11 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 				source += "\\";
 			source += "*.*";
 			source.append(1, '\0');
+			cout << "Source append: " << source << endl;
 			if (destination.back() != '\\')
 				destination += "\\";
 			destination.append(1, '\0');
-			std::cout << source << " " << destination << endl;
+			//std::cout << source << " " << destination << endl;
 			SHFILEOPSTRUCT shFileOperationStructure = { 0 };
 			shFileOperationStructure.wFunc = FO_COPY;
 			shFileOperationStructure.fFlags = FOF_SILENT;
@@ -134,12 +149,15 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 			shFileOperationStructure.fFlags = FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR | FOF_SILENT;
 			SHFileOperation(&shFileOperationStructure);
 		}
+
 		else
 		{
 			const int bufferSize = 256;
 			HANDLE inputHandle, outputHandle;
 			DWORD inputBytes, outputBytes;
 			CHAR buffer[bufferSize];
+			if (destination.back() != '\\')
+				destination += "\\";
 			destination.append(findFileData.cFileName);
 			FindClose(findHandle);
 			inputHandle = CreateFile(source.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -152,8 +170,6 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 			CloseHandle(outputHandle);
 			CloseHandle(inputHandle);
 		}
-
-
 	}
 }
 void TaskExecutor::ErrorHandler(LPTSTR lpszFunction)
