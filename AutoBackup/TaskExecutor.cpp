@@ -28,8 +28,8 @@ DWORD WINAPI MyThreadFunction(LPVOID lpParam);
 //Struktura danych do przekazywania parametrów do w¹tków
 typedef struct threadData
 {
-	string srcDir;
-	string destDir;
+	char* srcDir;
+	char* destDir;
 	bool compress = false;
 }MYDATA, * PMYDATA;
 //Przekazywanie przez pusty wskaŸnik LPVOID, mo¿na stosowaæ dowolny typ danych
