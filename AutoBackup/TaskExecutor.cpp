@@ -20,7 +20,6 @@
 #include <strsafe.h>
 using namespace std;
 
-#define MAX_THREADS 3
 #define BUF_SIZE 255
 
 DWORD WINAPI MyThreadFunction(LPVOID lpParam);
@@ -106,7 +105,6 @@ DWORD WINAPI MyThreadFunction(LPVOID lpParam)
 
 	pDataArray = (PMYDATA)lpParam;
 
-	//Nie wiadomo czemu to sie odpala co 5 sekund
 	StringCchPrintf(msgBuf, BUF_SIZE, TEXT("Tworze backup, kompresja: %d\n"), pDataArray->compress);
 	StringCchLength(msgBuf, BUF_SIZE, &cchStringSize);
 	WriteConsole(hStdout, msgBuf, (DWORD)cchStringSize, &dwChars, NULL);

@@ -8,6 +8,7 @@
 #include "Validation.h"
 #include "NotImplementedException.h"
 #include "AutoBackupProcess.h"
+#include "fileapi.h"
 
 using namespace std;
 
@@ -24,6 +25,7 @@ Command Dialog::showMainDialog()
 	case Command::Stop:			stopAutoBackupProcess();	break;
 	case Command::ShowSchedule: showSchedule();				break;
 	case Command::NewTask:		createNewBackupTask();		break;
+	case Command::ClearTasks:	clearTasks();		        break;
 	case Command::Shutdown:									break;
 	}
 	return command;
@@ -159,6 +161,29 @@ void Dialog::saveTask(const BackupProperties& backup)
 	ofs.close();
 }
 
+void Dialog::clearTasks()
+{
+		if(!(DeleteFileA((LPCSTR)TEXT(".\schedule.dat"))))
+		{		
+			refreshConsole();
+			printf("Wyst¹pi³ b³¹d. Naciœnij dowolny przycisk...");
+
+			DWORD error = GetLastError();
+			if (error == ERROR_ACCESS_DENIED)
+			{
+				showMessage("Odmowa dostêpu\n");
+			}
+			else if (error = ERROR_FILE_NOT_FOUND)
+			{
+				showMessage("Nie znaleziono pliku\n");
+			}
+		}
+		else
+		{
+			showMessage("Usuniêto wszystkie zadania\n");
+		}
+}
+
 string Dialog::showDirDialog(string text)
 {
 	bool pathExists = false;
@@ -257,7 +282,7 @@ void Dialog::refreshConsole()
 void Dialog::printMainMenu()
 {
 	printf("Wybierz opcjê:\n");
-	printf("1 - Status programu \n2 - Uruchom program \n3 - Przerwij program \n4 - Utwórz zadanie \n5 - Wyœwietl harmonogram \n6 - Wy³¹cz konsolê\n\n");
+	printf("1 - Status programu \n2 - Uruchom program \n3 - Przerwij program \n4 - Utwórz zadanie \n5 - Wyczyœæ zadania \n6 - Wyœwietl harmonogram \n7 - Wy³¹cz konsolê\n\n");
 }
 
 int Dialog::readOption()
@@ -270,7 +295,7 @@ int Dialog::readOption()
 		char cOption = (char)iChar;
 		correctOption = isalnum(cOption) && !isalpha(cOption);
 		option = cOption - '0';
-		optionInScope = option > -1 && option < 7;
+		optionInScope = option > -1 && option < 8;
 	} while (!correctOption || !optionInScope);
 	return option;
 }

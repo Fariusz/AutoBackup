@@ -9,6 +9,7 @@ enum class Command
 	Start,
 	Stop,
 	NewTask,
+	ClearTasks,
 	ShowSchedule,
 	Shutdown
 };
@@ -27,6 +28,7 @@ private:
 	int readOption();
 	void createNewBackupTask();
 	void saveTask(const BackupProperties& backup);
+	void clearTasks();
 	void showStatus();
 	void showMessage(std::string text);
 	void startAutoBackupProcess();
