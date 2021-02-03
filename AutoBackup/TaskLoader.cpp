@@ -33,7 +33,10 @@ std::vector<BackupProperties> TaskLoader::loadTasks()
 			if (isAwaiting(backup))
 			{
 				_tasks.push_back(backup);
-				backup = prepareForNextTime(backup);
+				do {
+					backup = prepareForNextTime(backup);
+				} while (isAwaiting(backup));
+
 				line = backupprops::to_string(backup);
 			}
 			temp << line << endl;

@@ -15,6 +15,6 @@ int main()
     {
         vector<BackupProperties> tasks = taskLoader.loadTasks();
         taskExecutor.execute(tasks);
-        Sleep(30000);
+        Sleep(5000);
     }
 }
