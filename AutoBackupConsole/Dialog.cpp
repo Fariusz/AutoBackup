@@ -163,8 +163,12 @@ void Dialog::saveTask(const BackupProperties& backup)
 
 void Dialog::clearTasks()
 {
+	std::ofstream ofs;
+	ofs.open("schedule.dat", std::ofstream::out | std::ofstream::trunc);
+	ofs.close();
+	/*
 		if(!(DeleteFileA((LPCSTR)TEXT(".\schedule.dat"))))
-		{		
+		{	
 			refreshConsole();
 			printf("Wyst¹pi³ b³¹d. Naciœnij dowolny przycisk...");
 
@@ -182,6 +186,7 @@ void Dialog::clearTasks()
 		{
 			showMessage("Usuniêto wszystkie zadania\n");
 		}
+			*/
 }
 
 string Dialog::showDirDialog(string text)
