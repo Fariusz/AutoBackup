@@ -25,7 +25,7 @@ Command Dialog::showMainDialog()
 	case Command::Stop:			stopAutoBackupProcess();	break;
 	case Command::ShowSchedule: showSchedule();				break;
 	case Command::NewTask:		createNewBackupTask();		break;
-	case Command::ClearTasks:	clearTasks();		        break;
+	case Command::ClearTasks:	clearTasks();		        break; //Usuwa wpisy do harmonogramu
 	case Command::Shutdown:									break;
 	}
 	return command;
@@ -161,7 +161,7 @@ void Dialog::saveTask(const BackupProperties& backup)
 	ofs.close();
 }
 
-void Dialog::clearTasks()
+void Dialog::clearTasks() //Funkcja nadpisuje plik z harmonogramem w celu usuniêcia zaplanowanych zadañ
 {
 	std::ofstream ofs;
 	ofs.open("schedule.dat", std::ofstream::out | std::ofstream::trunc);
