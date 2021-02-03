@@ -139,11 +139,8 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 		source.pop_back();
 	WIN32_FIND_DATAA findFileData;
 	HANDLE findHandle = FindFirstFile(source.c_str(), &findFileData);
-	cout << "Source: " << source << endl;
-	cout << "Error: " << GetLastError() << endl;
 	if (findHandle != INVALID_HANDLE_VALUE)
 	{
-		cout << "Attr: " << findFileData.dwFileAttributes << endl;
 		bool success = false;
 
 		if (findFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
@@ -153,11 +150,9 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 				source += "\\";
 			source += "*.*";
 			source.append(1, '\0');
-			cout << "Source append: " << source << endl;
 			if (destination.back() != '\\')
 				destination += "\\";
 			destination.append(1, '\0');
-			//std::cout << source << " " << destination << endl;
 			SHFILEOPSTRUCT shFileOperationStructure = { 0 };
 			shFileOperationStructure.wFunc = FO_COPY;
 			shFileOperationStructure.fFlags = FOF_SILENT;
