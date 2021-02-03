@@ -24,12 +24,15 @@ using namespace std;
 
 DWORD WINAPI MyThreadFunction(LPVOID lpParam);
 
+
+//Struktura danych do przekazywania parametrów do w¹tków
 typedef struct threadData
 {
 	string srcDir;
 	string destDir;
 	bool compress = false;
 }MYDATA, * PMYDATA;
+//Przekazywanie przez pusty wskaŸnik LPVOID, mo¿na stosowaæ dowolny typ danych
 
 void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 {
@@ -41,6 +44,8 @@ void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 	{
 		tasks[i].destDir += '\0';
 		tasks[i].srcDir += '\0';
+
+		//Alokacja pamiêci pod dane w¹tków
 		pDataArray[i] = (PMYDATA)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(MYDATA));
 		if (pDataArray[i] == NULL)
 		{
@@ -58,6 +63,14 @@ void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 		}
 		pDataArray[i]->compress = tasks[i].compress;
 		dwThreadIdArray[i] = ' ';
+
+		//Je¿eli nie powiedzie siê alokacja pamiêci to koñczymy bo nasz system nie ma ju¿ wolnego ramu
+		if (pDataArray[i] == NULL)
+		{
+			ExitProcess(2);
+		}
+
+		//Tworzenie w¹tków
 		hThreadArray[i] = CreateThread(
 			NULL,
 			0,
@@ -65,14 +78,20 @@ void TaskExecutor::execute(std::vector<BackupProperties> tasks)
 			pDataArray[i],
 			0,
 			&dwThreadIdArray[i]);
+
+		//Je¿eli tworzenie w¹tka siê nie powiedzie to zg³aszamy b³¹d 
 		if (hThreadArray[i] == NULL)
 		{
 			ErrorHandler((LPTSTR)TEXT("error"));
-			ExitProcess(3);
+			//ExitProcess(3);
 		}
 	}
 	DWORD count = tasks.size();
+
+	//Czekanie na zakoñczenie wszystkich dzia³ajacych watków
 	WaitForMultipleObjects(count, hThreadArray, TRUE, INFINITE);
+
+	//Zamykanie uchwytów i czyszczenie pamiêci po wykonanych w¹tkach
 	for (int i = 0; i < tasks.size(); i++)
 	{
 		CloseHandle(hThreadArray[i]);
@@ -172,6 +191,7 @@ void TaskExecutor::DoBackup(string source, string destination, bool compress)
 }
 void TaskExecutor::ErrorHandler(LPTSTR lpszFunction)
 {
+	// Otrzymanie wiadomoœci o b³êdach wykonania programu
 	LPVOID lpMsgBuf;
 	LPVOID lpDisplayBuf;
 	DWORD dw = GetLastError();
@@ -186,6 +206,7 @@ void TaskExecutor::ErrorHandler(LPTSTR lpszFunction)
 		(LPTSTR)&lpMsgBuf,
 		0, NULL);
 
+	//Wyœwietlanie komunikatów o b³êdach
 	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
 		(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
 	StringCchPrintf((LPTSTR)lpDisplayBuf,
@@ -194,6 +215,7 @@ void TaskExecutor::ErrorHandler(LPTSTR lpszFunction)
 		lpszFunction, dw, lpMsgBuf);
 	MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
 
+	//Czyszczenie buforów 
 	LocalFree(lpMsgBuf);
 	LocalFree(lpDisplayBuf);
 }

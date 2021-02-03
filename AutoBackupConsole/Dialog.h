@@ -28,7 +28,7 @@ private:
 	int readOption();
 	void createNewBackupTask();
 	void saveTask(const BackupProperties& backup);
-	void clearTasks();
+	void clearTasks(); //Usuwa zadania z harmonogramu
 	void showStatus();
 	void showMessage(std::string text);
 	void startAutoBackupProcess();
