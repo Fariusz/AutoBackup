@@ -163,16 +163,25 @@ void Dialog::saveTask(const BackupProperties& backup)
 
 void Dialog::clearTasks()
 {
-	try 
-	{
-		DeleteFileA((LPCSTR)TEXT("schedule.dat"));
-		showMessage("Usuniêto wszystkie zadania\n");
-	}
-	catch (exception e)
-	{
-		refreshConsole();
-		printf("Wyst¹pi³ b³¹d. Naciœnij dowolny przycisk...");
-	}
+		if(!(DeleteFileA((LPCSTR)TEXT(".\schedule.dat"))))
+		{		
+			refreshConsole();
+			printf("Wyst¹pi³ b³¹d. Naciœnij dowolny przycisk...");
+
+			DWORD error = GetLastError();
+			if (error == ERROR_ACCESS_DENIED)
+			{
+				showMessage("Odmowa dostêpu\n");
+			}
+			else if (error = ERROR_FILE_NOT_FOUND)
+			{
+				showMessage("Nie znaleziono pliku\n");
+			}
+		}
+		else
+		{
+			showMessage("Usuniêto wszystkie zadania\n");
+		}
 }
 
 string Dialog::showDirDialog(string text)
