@@ -3,3 +3,9 @@ Debug
 x64
 *.log
 *.dat
+AutoBackup/C/test/cos.txt
+AutoBackup/C/test/test.txt
+AutoBackup/log.log
+AutoBackup/schedule.dat
+AutoBackup/log.log
+AutoBackup/schedule.dat

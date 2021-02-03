@@ -24,6 +24,7 @@ Command Dialog::showMainDialog()
 	case Command::Stop:			stopAutoBackupProcess();	break;
 	case Command::ShowSchedule: showSchedule();				break;
 	case Command::NewTask:		createNewBackupTask();		break;
+	case Command::DeleteTask:	deleteBackupTask();		    break;
 	case Command::Shutdown:									break;
 	}
 	return command;
@@ -152,6 +153,11 @@ void Dialog::createNewBackupTask()
 	}
 }
 
+void Dialog::deleteBackupTask()
+{
+	showMessage("not implemented yet");
+}
+
 void Dialog::saveTask(const BackupProperties& backup)
 {
 	ofstream ofs("schedule.dat", ios::app);
@@ -257,7 +263,7 @@ void Dialog::refreshConsole()
 void Dialog::printMainMenu()
 {
 	printf("Wybierz opcjê:\n");
-	printf("1 - Status programu \n2 - Uruchom program \n3 - Przerwij program \n4 - Utwórz zadanie \n5 - Wyœwietl harmonogram \n6 - Wy³¹cz konsolê\n\n");
+	printf("1 - Status programu \n2 - Uruchom program \n3 - Przerwij program \n4 - Utwórz zadanie \n5 - Usuñ zadanie \n6 - Wyœwietl harmonogram \n7 - Wy³¹cz konsolê\n\n");
 }
 
 int Dialog::readOption()
@@ -270,7 +276,7 @@ int Dialog::readOption()
 		char cOption = (char)iChar;
 		correctOption = isalnum(cOption) && !isalpha(cOption);
 		option = cOption - '0';
-		optionInScope = option > -1 && option < 7;
+		optionInScope = option > -1 && option < 8;
 	} while (!correctOption || !optionInScope);
 	return option;
 }

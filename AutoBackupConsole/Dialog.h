@@ -9,6 +9,7 @@ enum class Command
 	Start,
 	Stop,
 	NewTask,
+	DeleteTask,
 	ShowSchedule,
 	Shutdown
 };
@@ -26,6 +27,7 @@ private:
 	void printTasks(std::vector<BackupProperties>& tasks);
 	int readOption();
 	void createNewBackupTask();
+	void deleteBackupTask();
 	void saveTask(const BackupProperties& backup);
 	void showStatus();
 	void showMessage(std::string text);
