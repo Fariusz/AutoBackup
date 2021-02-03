@@ -8,6 +8,7 @@
 #include "Validation.h"
 #include "NotImplementedException.h"
 #include "AutoBackupProcess.h"
+#include "fileapi.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ Command Dialog::showMainDialog()
 	case Command::Stop:			stopAutoBackupProcess();	break;
 	case Command::ShowSchedule: showSchedule();				break;
 	case Command::NewTask:		createNewBackupTask();		break;
-	case Command::DeleteTask:	deleteBackupTask();		    break;
+	case Command::ClearTasks:	clearTasks();		        break;
 	case Command::Shutdown:									break;
 	}
 	return command;
@@ -153,16 +154,25 @@ void Dialog::createNewBackupTask()
 	}
 }
 
-void Dialog::deleteBackupTask()
-{
-	showMessage("not implemented yet");
-}
-
 void Dialog::saveTask(const BackupProperties& backup)
 {
 	ofstream ofs("schedule.dat", ios::app);
 	ofs << backupprops::to_string(backup) << "\n";
 	ofs.close();
+}
+
+void Dialog::clearTasks()
+{
+	try 
+	{
+		DeleteFileA((LPCSTR)TEXT("schedule.dat"));
+		showMessage("Usuniêto wszystkie zadania\n");
+	}
+	catch (exception e)
+	{
+		refreshConsole();
+		printf("Wyst¹pi³ b³¹d. Naciœnij dowolny przycisk...");
+	}
 }
 
 string Dialog::showDirDialog(string text)
@@ -263,7 +273,7 @@ void Dialog::refreshConsole()
 void Dialog::printMainMenu()
 {
 	printf("Wybierz opcjê:\n");
-	printf("1 - Status programu \n2 - Uruchom program \n3 - Przerwij program \n4 - Utwórz zadanie \n5 - Usuñ zadanie \n6 - Wyœwietl harmonogram \n7 - Wy³¹cz konsolê\n\n");
+	printf("1 - Status programu \n2 - Uruchom program \n3 - Przerwij program \n4 - Utwórz zadanie \n5 - Wyczyœæ zadania \n6 - Wyœwietl harmonogram \n7 - Wy³¹cz konsolê\n\n");
 }
 
 int Dialog::readOption()
